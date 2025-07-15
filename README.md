@@ -9,13 +9,17 @@
 
 
       App/
-      ├── main.py                  # FastAPI app
-      ├── document_loader.py       # PDF parsing and chunking
-      ├── vector_store.py          # Chroma for embedding and 
-      ├── qa_chain.py              # LangChain QA pipeline
-      ├── requirements.txt         # Not Included (Need to Install dependencies)
-      ├── .env                     # Not Included (Requires Google API Key)
-      └── README.md                
+            ├── main.py                  # FastAPI app
+            ├── document_loader.py       # PDF parsing and chunking
+            ├── vector_store.py          # Chroma for embedding and 
+            ├── qa_chain.py              # LangGraph QA pipeline
+      templates/
+            ├──index.html
+      static/
+            ├──style.css
+      requirements.txt         # Not Included (Need to Install dependencies)
+      .env                     # Not Included (Requires Google API Key)
+      README.md                
 
 ## 📄 requirements.txt
 
