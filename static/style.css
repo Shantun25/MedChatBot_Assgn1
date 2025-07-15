@@ -1,0 +1,28 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 2rem;
+  background: #f0f4f8;
+}
+h1 {
+  color: #333;
+}
+form {
+  margin-bottom: 1rem;
+}
+textarea {
+  width: 100%;
+  height: 100px;
+}
+button {
+  padding: 0.5rem 1rem;
+  background: #007bff;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+.chat-response {
+  background: #fff;
+  padding: 1rem;
+  border: 1px solid #ccc;
+  margin-top: 1rem;
+}
