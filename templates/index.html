@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        #chatbox {
+            scroll-behavior: smooth;
+        }
+        .user-msg, .bot-msg {
+            max-width: 80%;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+
+    <div class="container mx-auto p-4 flex flex-col h-screen max-w-4xl">
+        <header class="mb-6 text-center">
+            <h1 class="text-4xl font-bold text-gray-800 dark:text-white">Medical Chatbot</h1>
+            <p class="text-gray-600 dark:text-gray-400 mt-2">Upload a PDF file and ask questions</p>
+        </header>
+
+        <!-- Upload Section -->
+        <div id="upload-section" class="mb-6 p-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg">
+            <h2 class="text-2xl font-semibold mb-4 text-gray-800 dark:text-white">1. Upload Your PDF</h2>
+            <form id="upload-form" class="flex flex-col sm:flex-row items-center gap-4">
+                <div class="relative flex-grow w-full">
+                    <input type="file" id="pdf-file" name="file" class="hidden" accept=".pdf" onchange="updateFileName()">
+                    <label for="pdf-file" class="w-full cursor-pointer bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 ease-in-out text-center">
+                        Choose PDF File
+                    </label>
+                    <span id="file-name" class="ml-4 text-gray-500 dark:text-gray-400">No file chosen</span>
+                </div>
+                <button type="submit" class="w-full sm:w-auto bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 ease-in-out flex items-center justify-center">
+                    <svg id="upload-icon" class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                    <svg id="upload-spinner" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>Upload & Process</span>
+                </button>
+            </form>
+            <div id="upload-status" class="mt-4 text-sm"></div>
+        </div>
+
+        <!-- Chat Section -->
+        <div id="chat-section" class="flex-grow flex flex-col bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden hidden">
+            <div id="chatbox" class="flex-grow p-6 space-y-6 overflow-y-auto">
+                <!-- Chat messages will be appended here -->
+                <div class="flex justify-start">
+                    <div class="bot-msg bg-gray-200 dark:bg-gray-700 p-4 rounded-lg rounded-bl-none">
+                        <p class="text-gray-800 dark:text-white">Hello! I'm ready to answer questions about your document.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="p-4 bg-gray-100 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
+                <form id="ask-form" class="flex items-center gap-4">
+                    <input type="text" id="question" placeholder="Ask a question..." class="flex-grow bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+                    <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white font-bold p-3 rounded-lg transition-all duration-300 ease-in-out flex items-center justify-center">
+                        <svg id="send-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                         <svg id="send-spinner" class="animate-spin h-6 w-6 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const uploadForm = document.getElementById('upload-form');
+        const uploadStatus = document.getElementById('upload-status');
+        const chatSection = document.getElementById('chat-section');
+        const askForm = document.getElementById('ask-form');
+        const questionInput = document.getElementById('question');
+        const chatbox = document.getElementById('chatbox');
+        const fileNameSpan = document.getElementById('file-name');
+        
+        const uploadIcon = document.getElementById('upload-icon');
+        const uploadSpinner = document.getElementById('upload-spinner');
+        const sendIcon = document.getElementById('send-icon');
+        const sendSpinner = document.getElementById('send-spinner');
+
+
+        function updateFileName() {
+            const pdfFile = document.getElementById('pdf-file');
+            if (pdfFile.files.length > 0) {
+                fileNameSpan.textContent = pdfFile.files[0].name;
+            } else {
+                fileNameSpan.textContent = 'No file chosen';
+            }
+        }
+
+        function showUploadSpinner(show) {
+            uploadIcon.classList.toggle('hidden', show);
+            uploadSpinner.classList.toggle('hidden', !show);
+            uploadForm.querySelector('button[type="submit"]').disabled = show;
+        }
+        
+        function showSendSpinner(show) {
+            sendIcon.classList.toggle('hidden', show);
+            sendSpinner.classList.toggle('hidden', !show);
+            askForm.querySelector('button[type="submit"]').disabled = show;
+            questionInput.disabled = show;
+        }
+
+        uploadForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData();
+            const pdfFile = document.getElementById('pdf-file');
+
+            if (pdfFile.files.length === 0) {
+                uploadStatus.textContent = 'Please select a PDF file first.';
+                uploadStatus.className = 'mt-4 text-sm text-red-500';
+                return;
+            }
+
+            formData.append('file', pdfFile.files[0]);
+            showUploadSpinner(true);
+            uploadStatus.textContent = 'Uploading and processing... This may take a moment.';
+            uploadStatus.className = 'mt-4 text-sm text-blue-500';
+
+            try {
+                const response = await fetch('/upload/', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                const result = await response.json();
+                console.log('Server response:', result);
+
+
+                if (response.ok) {
+                    uploadStatus.textContent = result.message;
+                    uploadStatus.className = 'mt-4 text-sm text-green-500';
+                    chatSection.classList.remove('hidden');
+                    chatSection.classList.add('flex');
+                    document.getElementById('upload-section').classList.add('hidden');
+                } else {
+                    uploadStatus.textContent = `Error: ${result.detail}`;
+                    uploadStatus.className = 'mt-4 text-sm text-red-500';
+                }
+            } catch (error) {
+                uploadStatus.textContent = 'An unexpected error occurred. See console for details. I am Here';
+                uploadStatus.className = 'mt-4 text-sm text-red-500';
+                console.error(error);
+            } finally {
+                showUploadSpinner(false);
+            }
+        });
+
+        askForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const question = questionInput.value.trim();
+            if (!question) return;
+
+            // Display user's question
+            appendMessage(question, 'user');
+            questionInput.value = '';
+            showSendSpinner(true);
+            
+            // Add a thinking indicator for the bot
+            const thinkingDiv = appendMessage('...', 'bot');
+
+            try {
+                const response = await fetch('/ask/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ question: question }),
+                });
+
+                const result = await response.json();
+                
+                // Remove thinking indicator and update with actual answer
+                thinkingDiv.querySelector('p').textContent = result.answer;
+
+            } catch (error) {
+                 thinkingDiv.querySelector('p').textContent = 'Sorry, an error occurred. Please try again.';
+                 thinkingDiv.classList.add('bg-red-200', 'dark:bg-red-800');
+                console.error(error);
+            } finally {
+                showSendSpinner(false);
+                questionInput.focus();
+            }
+        });
+
+        function appendMessage(text, sender) {
+            const messageWrapper = document.createElement('div');
+            const messageDiv = document.createElement('div');
+            const messageP = document.createElement('p');
+
+            messageP.textContent = text;
+            
+            if (sender === 'user') {
+                messageWrapper.className = 'flex justify-end';
+                messageDiv.className = 'user-msg bg-blue-500 text-white p-4 rounded-lg rounded-br-none';
+            } else {
+                messageWrapper.className = 'flex justify-start';
+                messageDiv.className = 'bot-msg bg-gray-200 dark:bg-gray-700 p-4 rounded-lg rounded-bl-none';
+                messageP.className = 'text-gray-800 dark:text-white';
+            }
+            
+            messageDiv.appendChild(messageP);
+            messageWrapper.appendChild(messageDiv);
+            chatbox.appendChild(messageWrapper);
+            chatbox.scrollTop = chatbox.scrollHeight;
+            return messageDiv;
+        }
+    </script>
+</body>
+</html>
